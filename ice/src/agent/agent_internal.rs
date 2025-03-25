@@ -551,7 +551,6 @@ impl AgentInternal {
 
         self.request_connectivity_check();
     }
-
     pub(crate) async fn add_candidate(
         self: &Arc<Self>,
         c: &Arc<dyn Candidate + Send + Sync>,
@@ -568,8 +567,10 @@ impl AgentInternal {
         {
             let mut local_candidates = self.local_candidates.lock().await;
             if let Some(cands) = local_candidates.get(&network_type) {
+                log::info!("found existing candidates for network type: {}", network_type);
                 for cand in cands {
                     if cand.equal(&**c) {
+                        log::info!("closing duplicate candidate: {}", cand);
                         if let Err(err) = c.close().await {
                             log::warn!(
                                 "[{}]: Failed to close duplicate candidate: {}",
@@ -578,6 +579,7 @@ impl AgentInternal {
                             );
                         }
                         //TODO: why return?
+                        log::info!("returning away");
                         return Ok(());
                     }
                 }
@@ -599,13 +601,15 @@ impl AgentInternal {
         }
 
         for cand in remote_cands {
+            log::info!("adding pair remote: {}, local: {}", cand, c);
             self.add_pair(c.clone(), cand).await;
         }
 
         self.request_connectivity_check();
         {
             let chan_candidate_tx = self.chan_candidate_tx.lock().await;
-            if let Some(tx) = &*chan_candidate_tx {
+            if let Some(tx) = &*chan_candidate_tx
+            {
                 let _ = tx.send(Some(c.clone())).await;
             }
         }

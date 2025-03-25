@@ -451,7 +451,7 @@ impl Agent {
         let conn = udp_mux.get_conn(&ufrag).await?;
         let port = conn.local_addr()?.port();
 
-        for candidate_ip in candidate_ips.first() {
+        for candidate_ip in candidate_ips {
             let host_config = CandidateHostConfig {
                 base_config: CandidateBaseConfig {
                     network: UDP.to_owned(),
