@@ -556,7 +556,6 @@ impl AgentInternal {
         self: &Arc<Self>,
         c: &Arc<dyn Candidate + Send + Sync>,
     ) -> Result<()> {
-        println!("WTF!!!");
         log::info!("add candidate: {}", c);
         let initialized_ch = {
             let started_ch_tx = self.started_ch_tx.lock().await;
